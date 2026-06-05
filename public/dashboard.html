@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi lugar — Kōhi</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { padding: 2rem; }
+    .dashboard { max-width: 480px; margin: 0 auto; padding: 3rem 0 4rem; display: none; }
+    .dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; }
+    .brand-link { font-family: 'Shippori Mincho B1', serif; font-size: 1.4rem; font-weight: 700; color: var(--text); text-decoration: none; }
+    .logout-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); font-family: inherit; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; transition: color 0.2s, border-color 0.2s; }
+    .logout-btn:hover { color: var(--text); border-color: var(--text-muted); }
+    .greeting { margin-bottom: 2rem; }
+    .greeting-label { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.3rem; }
+    .greeting-name { font-family: 'Shippori Mincho B1', serif; font-size: clamp(1.8rem, 5vw, 2.6rem); font-weight: 700; line-height: 1.2; }
+    .pos-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; margin-bottom: 1.25rem; }
+    .pos-row { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.2rem; }
+    .pos-num { font-family: 'Shippori Mincho B1', serif; font-size: clamp(3rem, 9vw, 4.5rem); font-weight: 700; color: var(--gold); line-height: 1; }
+    .pos-total { font-size: 1rem; color: var(--text-muted); }
+    .pos-meta { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+    .progress-header { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.07em; margin-bottom: 0.5rem; text-transform: uppercase; }
+    .progress-track { height: 3px; background: var(--bg-elevated); border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold-dim), var(--gold)); border-radius: 2px; width: 0%; transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .qr-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+    .qr-card-label { font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase; }
+    .qr-wrap { background: #1c1914; padding: 12px; border-radius: 8px; border: 1px solid var(--border); }
+    #qr-grid { display: grid; gap: 2px; }
+    .qr-cell { width: 7px; height: 7px; border-radius: 1px; }
+    .qr-cell.on  { background: var(--text); }
+    .qr-cell.off { background: transparent; }
+    .qr-id { font-size: 0.78rem; color: var(--gold); letter-spacing: 0.2em; font-family: 'Shippori Mincho B1', serif; }
+    .loading { min-height: 100vh; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; color: var(--text-muted); letter-spacing: 0.1em; }
+  </style>
+</head>
+<body>
+  <div id="loading" class="loading">— cargando —</div>
+
+  <div id="dashboard" class="dashboard">
+    <header class="dash-header">
+      <a href="index.html" class="brand-link">Kōhi</a>
+      <button id="logout-btn" class="logout-btn">Salir</button>
+    </header>
+
+    <section class="greeting">
+      <p class="greeting-label">Bienvenido de vuelta</p>
+      <h1 class="greeting-name" id="user-name">—</h1>
+    </section>
+
+    <div class="pos-card">
+      <div class="pos-row">
+        <span class="pos-num" id="pos-num">—</span>
+        <span class="pos-total" id="pos-total">de —</span>
+      </div>
+      <p class="pos-meta">Eres el <strong id="pos-label">—</strong> en la lista de espera</p>
+      <div class="progress-header">
+        <span>Posición en la cola</span>
+        <span id="progress-pct">—</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <div class="qr-card">
+      <span class="qr-card-label">Código de acceso</span>
+      <div class="qr-wrap"><div id="qr-grid"></div></div>
+      <span class="qr-id" id="qr-id">QR-——</span>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('kohi_token');
+    if (!token) window.location.href = 'login.html';
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      localStorage.removeItem('kohi_token');
+      window.location.href = 'index.html';
+    });
+
+    function renderQR(seed) {
+      const SIZE = 17;
+      const grid = document.getElementById('qr-grid');
+      grid.style.gridTemplateColumns = `repeat(${SIZE}, 7px)`;
+      let s = seed;
+      function nextBit() {
+        s = Math.imul(s, 1664525) + 1013904223;
+        return (s >>> 31) & 1;
+      }
+      function finderCell(r, c) {
+        if (r === 0 || r === 6 || c === 0 || c === 6) return true;
+        if (r >= 2 && r <= 4 && c >= 2 && c <= 4) return true;
+        return false;
+      }
+      function inFinderZone(r, c) {
+        const br = SIZE - 7;
+        if (r < 7 && c < 7) return { dr: r, dc: c };
+        if (r < 7 && c >= SIZE - 7) return { dr: r, dc: c - br };
+        if (r >= SIZE - 7 && c < 7) return { dr: r - br, dc: c };
+        return null;
+      }
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'qr-cell';
+          const zone = inFinderZone(r, c);
+          cell.classList.add((zone ? finderCell(zone.dr, zone.dc) : nextBit() === 1) ? 'on' : 'off');
+          grid.appendChild(cell);
+        }
+      }
+    }
+
+    async function loadDashboard() {
+      try {
+        const res = await fetch('/api/me', { headers: { Authorization: `Bearer ${token}` } });
+        if (res.status === 401) { localStorage.removeItem('kohi_token'); window.location.href = 'login.html'; return; }
+        const { name, position, total } = await res.json();
+        document.getElementById('user-name').textContent  = name;
+        document.getElementById('pos-num').textContent    = `#${position}`;
+        document.getElementById('pos-total').textContent  = `de ${total}`;
+        document.getElementById('pos-label').textContent  = `#${position} de ${total}`;
+        const pct = total <= 1 ? 100 : Math.round((total - position) / (total - 1) * 100);
+        document.getElementById('progress-pct').textContent = `${pct}%`;
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          document.getElementById('progress-fill').style.width = `${pct}%`;
+        }));
+        document.getElementById('qr-id').textContent = `QR-${String(position).padStart(4, '0')}`;
+        renderQR(position);
+        document.getElementById('loading').style.display   = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+      } catch {
+        document.getElementById('loading').textContent = 'Error al cargar. Intentá de nuevo.';
+      }
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>
