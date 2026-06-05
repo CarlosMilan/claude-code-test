@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro — Kōhi</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .brand { text-align: center; margin-bottom: 2rem; }
+    .brand-name { font-family: 'Shippori Mincho B1', serif; font-size: 1.8rem; font-weight: 700; }
+    .brand-name a { color: var(--text); }
+    .brand-sub { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 0.2rem; }
+    .success-panel { display: none; text-align: center; padding: 0.5rem 0 1rem; }
+    .success-panel.visible { display: block; }
+    .success-heading { font-family: 'Shippori Mincho B1', serif; font-size: 1.3rem; color: var(--text); margin-bottom: 1.5rem; }
+    .position-label { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.4rem; }
+    .position-badge { font-family: 'Shippori Mincho B1', serif; font-size: 4.5rem; font-weight: 700; color: var(--gold); line-height: 1; margin-bottom: 1rem; }
+    .success-note { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.75rem; }
+    .footer-link { text-align: center; font-size: 0.875rem; color: var(--text-muted); }
+  </style>
+</head>
+<body class="page">
+  <div class="brand">
+    <div class="brand-name"><a href="index.html">Kōhi</a></div>
+    <div class="brand-sub">Lista de espera</div>
+  </div>
+
+  <div class="card">
+    <div id="alert-error" class="alert alert-error"></div>
+
+    <form id="register-form">
+      <div class="field">
+        <label for="name">Nombre</label>
+        <input type="text" id="name" placeholder="Tu nombre completo" autocomplete="name" required>
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="tu@email.com" autocomplete="email" required>
+      </div>
+      <div class="field">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" placeholder="Mínimo 8 caracteres" minlength="8" required>
+      </div>
+      <div class="field">
+        <label for="confirm">Confirmar contraseña</label>
+        <input type="password" id="confirm" placeholder="Repetí tu contraseña" required>
+      </div>
+      <button type="submit" id="submit-btn" class="btn btn-primary btn-full">Unirme a la lista</button>
+    </form>
+
+    <div id="success-panel" class="success-panel">
+      <p class="success-heading">¡Estás en la lista!</p>
+      <p class="position-label">Tu posición</p>
+      <div class="position-badge" id="position-display">#—</div>
+      <p class="success-note">Te avisaremos cuando abramos nuestras puertas.</p>
+      <a href="login.html" class="btn btn-secondary btn-full">Acceder a mi cuenta</a>
+    </div>
+
+    <div class="divider">o</div>
+    <p class="footer-link">¿Ya tenés cuenta? <a href="login.html">Iniciar sesión</a></p>
+  </div>
+
+  <script>
+    const form      = document.getElementById('register-form');
+    const errAlert  = document.getElementById('alert-error');
+    const submitBtn = document.getElementById('submit-btn');
+    const success   = document.getElementById('success-panel');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errAlert.classList.remove('visible');
+
+      const name     = document.getElementById('name').value.trim();
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirm  = document.getElementById('confirm').value;
+
+      if (password !== confirm) {
+        errAlert.textContent = 'Las contraseñas no coinciden.';
+        errAlert.classList.add('visible');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Registrando…';
+
+      try {
+        const res  = await fetch('/api/register', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ name, email, password }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          errAlert.textContent = data.error || 'Error al registrarse.';
+          errAlert.classList.add('visible');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Unirme a la lista';
+          return;
+        }
+
+        document.getElementById('position-display').textContent = `#${data.position}`;
+        form.style.display = 'none';
+        success.classList.add('visible');
+      } catch {
+        errAlert.textContent = 'Error de conexión. Intentá de nuevo.';
+        errAlert.classList.add('visible');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Unirme a la lista';
+      }
+    });
+  </script>
+</body>
+</html>

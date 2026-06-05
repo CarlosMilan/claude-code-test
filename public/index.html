@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kōhi — Café de Especialidad</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { overflow: hidden; }
+
+    .landing {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .bg-kanji {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Shippori Mincho B1', serif;
+      font-size: clamp(16rem, 40vw, 38rem);
+      color: rgba(200, 168, 74, 0.035);
+      user-select: none;
+      pointer-events: none;
+      line-height: 1;
+    }
+
+    .logo {
+      font-family: 'Shippori Mincho B1', serif;
+      font-size: clamp(4.5rem, 14vw, 9rem);
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      line-height: 1;
+      margin-bottom: 0.1em;
+    }
+
+    .logo-ruby {
+      display: block;
+      font-size: clamp(0.7rem, 1.8vw, 0.95rem);
+      font-weight: 400;
+      letter-spacing: 0.45em;
+      color: var(--gold);
+      font-family: 'Shippori Mincho B1', serif;
+      margin-bottom: 2.5rem;
+    }
+
+    .line-deco {
+      width: 1px;
+      height: 56px;
+      background: linear-gradient(to bottom, transparent, var(--gold-dim), transparent);
+      margin: 0 auto 2.5rem;
+    }
+
+    .tagline {
+      font-family: 'Shippori Mincho B1', serif;
+      font-size: clamp(1rem, 2.8vw, 1.35rem);
+      font-weight: 400;
+      color: var(--text);
+      letter-spacing: 0.05em;
+      margin-bottom: 1.5rem;
+      line-height: 1.9;
+    }
+
+    .philosophy {
+      max-width: 360px;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      letter-spacing: 0.03em;
+      line-height: 2;
+      margin-bottom: 3rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .footer-note {
+      position: fixed;
+      bottom: 2rem;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-kanji">珈</div>
+
+  <main class="landing">
+    <h1 class="logo">Kōhi</h1>
+    <span class="logo-ruby">コーヒー</span>
+    <div class="line-deco"></div>
+    <p class="tagline">
+      Café de especialidad.<br>Próxima apertura.
+    </p>
+    <p class="philosophy">
+      Cada taza cuenta la historia de su origen.<br>
+      Cultivado con cuidado. Servido con intención.<br>
+      Silencio, aroma y precisión.
+    </p>
+    <div class="actions">
+      <a href="register.html" class="btn btn-primary">Unirme a la lista</a>
+      <a href="login.html" class="btn btn-secondary">Ya tengo cuenta</a>
+    </div>
+  </main>
+
+  <p class="footer-note">Tokyo · Buenos Aires · 2025</p>
+</body>
+</html>
